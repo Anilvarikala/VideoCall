@@ -1,65 +1,235 @@
+// import React, { useEffect, useRef, useState } from "react";
+// import SimplePeer from "simple-peer";
+// import {
+//   collection,
+//   addDoc,
+//   getDoc,
+//   doc,
+//   onSnapshot,
+// } from "firebase/firestore";
+// import { db } from "../firebase";
+
+// const VideoCall = () => {
+//   useEffect(() => {
+//     console.log("Came to video call");
+//   }, []);
+
+//   const [stream, setStream] = useState(null);
+//   const [callId, setCallId] = useState("");
+//   const [generatedCallId, setGeneratedCallId] = useState(""); // Store the created call ID
+//   const myVideoRef = useRef();
+//   const peerVideoRef = useRef();
+//   const peerConnection = useRef(null);
+
+//   const startVideo = async () => {
+//     try {
+//       const stream = await navigator.mediaDevices.getUserMedia({
+//         video: true,
+//         audio: true,
+//       });
+//       myVideoRef.current.srcObject = stream;
+//       setStream(stream);
+//     } catch (error) {
+//       console.error("Error accessing camera:", error);
+//     }
+//   };
+
+//   // const createCall = async () => {
+//   //   peerConnection.current = new SimplePeer({ initiator: true, stream });
+
+//   //   peerConnection.current.on("signal", async (signal) => {
+//   //     const docRef = await addDoc(collection(db, "calls"), { offer: JSON.stringify(signal) });
+//   //     setCallId(docRef.id);
+//   //     setGeneratedCallId(docRef.id); // Save the generated Call ID for display
+//   //   });
+
+//   //   peerConnection.current.on("stream", (peerStream) => {
+//   //     peerVideoRef.current.srcObject = peerStream;
+//   //   });
+//   // };
+//   const createCall = async () => {
+//     peerConnection.current = new SimplePeer({ initiator: true, stream });
+
+//     peerConnection.current.on("signal", async (signal) => {
+//       try {
+//         const docRef = await addDoc(collection(db, "calls"), {
+//           offer: JSON.stringify(signal),
+//         });
+//         console.log("Generated Call ID:", docRef.id); // Debugging
+//         setCallId(docRef.id);
+//         setGeneratedCallId(docRef.id);
+//       } catch (error) {
+//         console.error("Error creating call:", error);
+//       }
+//     });
+
+//     peerConnection.current.on("stream", (peerStream) => {
+//       peerVideoRef.current.srcObject = peerStream;
+//     });
+//   };
+
+//   // const joinCall = async () => {
+//   //   const docRef = doc(db, "calls", callId);
+//   //   const docSnap = await getDoc(docRef);
+
+//   //   if (docSnap.exists()) {
+//   //     peerConnection.current = new SimplePeer({ initiator: false, stream });
+
+//   //     peerConnection.current.on("signal", async (signal) => {
+//   //       await addDoc(collection(db, "calls"), {
+//   //         answer: JSON.stringify(signal),
+//   //       });
+//   //     });
+
+//   //     peerConnection.current.on("stream", (peerStream) => {
+//   //       peerVideoRef.current.srcObject = peerStream;
+//   //     });
+
+//   //     peerConnection.current.signal(JSON.parse(docSnap.data().offer));
+
+//   //     onSnapshot(docRef, (updatedDoc) => {
+//   //       if (updatedDoc.data().answer) {
+//   //         peerConnection.current.signal(JSON.parse(updatedDoc.data().answer));
+//   //       }
+//   //     });
+//   //   } else {
+//   //     alert("Call ID not found!");
+//   //   }
+//   // };
+//   const joinCall = async () => {
+//     if (!callId) {
+//       alert("Please enter a valid Call ID!");
+//       return;
+//     }
+
+//     const docRef = doc(db, "calls", callId);
+//     const docSnap = await getDoc(docRef);
+
+//     if (docSnap.exists()) {
+//       const offer = JSON.parse(docSnap.data().offer); // Extract offer signal
+
+//       peerConnection.current = new SimplePeer({ initiator: false, stream });
+
+//       peerConnection.current.on("signal", async (signal) => {
+//         // Save the answer back to Firestore
+//         await addDoc(collection(db, "calls"), {
+//           answer: JSON.stringify(signal),
+//         });
+//         console.log("Sent Answer:", signal);
+//       });
+
+//       peerConnection.current.on("stream", (peerStream) => {
+//         peerVideoRef.current.srcObject = peerStream;
+//       });
+
+//       // Signal the initiator with the received offer
+//       peerConnection.current.signal(offer);
+
+//       // Listen for the answer from Firestore
+//       onSnapshot(docRef, (updatedDoc) => {
+//         if (updatedDoc.exists() && updatedDoc.data().answer) {
+//           console.log("Received Answer:", updatedDoc.data().answer);
+//           peerConnection.current.signal(JSON.parse(updatedDoc.data().answer));
+//         }
+//       });
+//     } else {
+//       alert("Call ID not found!");
+//     }
+//   };
+
+//   const copyToClipboard = () => {
+//     navigator.clipboard.writeText(generatedCallId);
+//     alert("Call ID copied to clipboard!");
+//   };
+
+//   return (
+//     <div>
+//       <h2>Simple Video Call App</h2>
+//       <button onClick={startVideo}>Start Video</button>
+//       <button onClick={createCall}>Create Call</button>
+
+//       {/* Show the generated Call ID after creating a call */}
+//       {generatedCallId && (
+//         <div>
+//           <p>
+//             <strong>Call ID:</strong> {generatedCallId}
+//           </p>
+//           <button onClick={copyToClipboard}>Copy to Clipboard</button>
+//         </div>
+//       )}
+
+//       <input
+//         type="text"
+//         value={callId}
+//         placeholder="Enter Call ID"
+//         onChange={(e) => setCallId(e.target.value)}
+//       />
+//       <button onClick={joinCall}>Join Call</button>
+
+//       <div>
+//         <video
+//           ref={myVideoRef}
+//           autoPlay
+//           playsInline
+//           style={{ width: "300px" }}
+//         />
+//         <video
+//           ref={peerVideoRef}
+//           autoPlay
+//           playsInline
+//           style={{ width: "300px" }}
+//         />
+//       </div>
+//     </div>
+//   );
+// };
+
+// export default VideoCall;
+
+
 
 
 import React, { useEffect, useRef, useState } from "react";
 import SimplePeer from "simple-peer";
-import {
-  collection,
-  addDoc,
-  getDoc,
-  doc,
-  onSnapshot,
-} from "firebase/firestore";
+import { collection, addDoc, getDoc, doc, onSnapshot } from "firebase/firestore";
 import { db } from "../firebase";
 
 const VideoCall = () => {
-  useEffect(() => {
-    console.log("Came to video call");
-  }, []);
-
   const [stream, setStream] = useState(null);
   const [callId, setCallId] = useState("");
-  const [generatedCallId, setGeneratedCallId] = useState(""); // Store the created call ID
   const myVideoRef = useRef();
   const peerVideoRef = useRef();
   const peerConnection = useRef(null);
 
+  useEffect(() => {
+    console.log("Video Call Component Loaded");
+  }, []);
+
+  // Start Video Stream
   const startVideo = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: true,
-        audio: true,
-      });
-      myVideoRef.current.srcObject = stream;
-      setStream(stream);
+      const userStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      myVideoRef.current.srcObject = userStream;
+      setStream(userStream);
     } catch (error) {
       console.error("Error accessing camera:", error);
     }
   };
 
-  // const createCall = async () => {
-  //   peerConnection.current = new SimplePeer({ initiator: true, stream });
-
-  //   peerConnection.current.on("signal", async (signal) => {
-  //     const docRef = await addDoc(collection(db, "calls"), { offer: JSON.stringify(signal) });
-  //     setCallId(docRef.id);
-  //     setGeneratedCallId(docRef.id); // Save the generated Call ID for display
-  //   });
-
-  //   peerConnection.current.on("stream", (peerStream) => {
-  //     peerVideoRef.current.srcObject = peerStream;
-  //   });
-  // };
+  // Create Call & Save Offer in Firestore
   const createCall = async () => {
-    peerConnection.current = new SimplePeer({ initiator: true, stream });
+    if (!stream) {
+      alert("Please start your video before creating a call!");
+      return;
+    }
+
+    peerConnection.current = new SimplePeer({ initiator: true, trickle: false, stream });
 
     peerConnection.current.on("signal", async (signal) => {
       try {
-        const docRef = await addDoc(collection(db, "calls"), {
-          offer: JSON.stringify(signal),
-        });
-        console.log("Generated Call ID:", docRef.id); // Debugging
+        const docRef = await addDoc(collection(db, "calls"), { offer: JSON.stringify(signal) });
         setCallId(docRef.id);
-        setGeneratedCallId(docRef.id);
+        alert(`📞 Call Created! Share this ID: ${docRef.id}`);
       } catch (error) {
         console.error("Error creating call:", error);
       }
@@ -68,82 +238,92 @@ const VideoCall = () => {
     peerConnection.current.on("stream", (peerStream) => {
       peerVideoRef.current.srcObject = peerStream;
     });
+
+    peerConnection.current.on("connect", () => {
+      alert("✅ Connection Established Successfully!");
+    });
   };
 
+  // Join a Call Using Call ID
   const joinCall = async () => {
+    if (!callId) {
+      alert("Please enter a valid Call ID!");
+      return;
+    }
+
     const docRef = doc(db, "calls", callId);
     const docSnap = await getDoc(docRef);
 
     if (docSnap.exists()) {
-      peerConnection.current = new SimplePeer({ initiator: false, stream });
+      const offer = JSON.parse(docSnap.data().offer);
+
+      peerConnection.current = new SimplePeer({ initiator: false, trickle: false, stream });
 
       peerConnection.current.on("signal", async (signal) => {
-        await addDoc(collection(db, "calls"), {
-          answer: JSON.stringify(signal),
-        });
+        try {
+          await addDoc(collection(db, "calls"), { answer: JSON.stringify(signal) });
+          console.log("Sent Answer:", signal);
+        } catch (error) {
+          console.error("Error sending answer:", error);
+        }
       });
 
       peerConnection.current.on("stream", (peerStream) => {
         peerVideoRef.current.srcObject = peerStream;
       });
 
-      peerConnection.current.signal(JSON.parse(docSnap.data().offer));
+      // Signal the initiator with the received offer
+      peerConnection.current.signal(offer);
 
+      // Listen for the answer from Firestore
       onSnapshot(docRef, (updatedDoc) => {
-        if (updatedDoc.data().answer) {
+        if (updatedDoc.exists() && updatedDoc.data().answer) {
           peerConnection.current.signal(JSON.parse(updatedDoc.data().answer));
         }
       });
-    } else {
-      alert("Call ID not found!");
-    }
-  };
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(generatedCallId);
-    alert("Call ID copied to clipboard!");
+      peerConnection.current.on("connect", () => {
+        alert("✅ Connection Established Successfully!");
+      });
+
+    } else {
+      alert("❌ Call ID not found!");
+    }
   };
 
   return (
     <div>
-      <h2>Simple Video Call App</h2>
-      <button onClick={startVideo}>Start Video</button>
-      <button onClick={createCall}>Create Call</button>
+      <h2>📹 Simple Video Call App</h2>
+      
+      <button onClick={startVideo}>🎥 Start Video</button>
+      <button onClick={createCall}>📞 Create Call</button>
 
-      {/* Show the generated Call ID after creating a call */}
-      {generatedCallId && (
-        <div>
-          <p>
-            <strong>Call ID:</strong> {generatedCallId}
-          </p>
-          <button onClick={copyToClipboard}>Copy to Clipboard</button>
-        </div>
+      <br />
+      {callId && (
+        <p>
+          <strong>Call ID: </strong> {callId}
+        </p>
       )}
 
-      <input
-        type="text"
-        value={callId}
-        placeholder="Enter Call ID"
-        onChange={(e) => setCallId(e.target.value)}
+      <input 
+        type="text" 
+        value={callId} 
+        placeholder="Enter Call ID to Join" 
+        onChange={(e) => setCallId(e.target.value)} 
       />
-      <button onClick={joinCall}>Join Call</button>
+      
+      <button onClick={joinCall}>🔗 Join Call</button>
 
       <div>
-        <video
-          ref={myVideoRef}
-          autoPlay
-          playsInline
-          style={{ width: "300px" }}
-        />
-        <video
-          ref={peerVideoRef}
-          autoPlay
-          playsInline
-          style={{ width: "300px" }}
-        />
+        <h3>My Video</h3>
+        <video ref={myVideoRef} autoPlay playsInline style={{ width: "300px", border: "2px solid blue" }} />
+
+        <h3>Peer Video</h3>
+        <video ref={peerVideoRef} autoPlay playsInline style={{ width: "300px", border: "2px solid green" }} />
       </div>
     </div>
   );
 };
 
 export default VideoCall;
+
